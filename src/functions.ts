@@ -1,20 +1,31 @@
-import { newCurrentProp } from "./types";
+import { StartOfProp, TimeZone, Unit } from "./types";
 
-export function getCurrent(getCurrentProp?: newCurrentProp) {
-  const utcDate = new Date();
+export class DateHelper {
+  private date: Date;
 
-  const mstOffset = getCurrentProp?.timeZone
-    ? getCurrentProp?.timeZone * 60 * 60 * 1000
-    : 0;
+  constructor(date?: Date) {
+    this.date = date || new Date();
+  }
 
-  // Convert UTC date to milliseconds since Unix Epoch
-  const utcTime = utcDate.getTime();
+  startOf(props: StartOfProp): Date {
+    switch (props.unit) {
+      case "year":
+        this.date.setMonth(0);
+      // Falls through intentionally
+      case "month":
+        this.date.setDate(1);
+      // Falls through intentionally
+      case "day":
+        this.date.setHours(0, 0, 0, 0);
+        break;
+      default:
+        throw new Error(`Unsupported unit: ${props.unit}`);
+    }
 
-  // Add the Timezone offset to the UTC time
-  const mstTime = utcTime + mstOffset;
+    if (props.as) {
+      this.date.setMilliseconds(this.date.getMilliseconds() + props.as);
+    }
 
-  // Create a new Date object with the Timezone time
-  const mstDate = new Date(mstTime);
-
-  return mstDate;
+    return new Date(this.date.getTime()); // Return a new Date instance to avoid mutating internal state
+  }
 }
