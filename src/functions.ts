@@ -10,20 +10,18 @@ export class DateHelper {
   private date: Date;
   private initialTimezoneOffset: number;
 
-  // constructor(props?: initializeProps) {
-  //   this.date = props?.date ? new Date(props.date) : new Date();
-  //   this.initialTimezoneOffset = props?.timezone || 0;
-  //   this.date.setMilliseconds(
-  //     this.date.getMilliseconds() + this.initialTimezoneOffset
-  //   );
+  // constructor(date?: Date, timezone: TimeZone = TimeZone.UTC) {
+  //   this.date = date ? new Date(date) : new Date();
+  //   this.initialTimezoneOffset = timezone * 60000; // Store the initial timezone offset in milliseconds
+  //   this.date.setTime(this.date.getTime() + this.initialTimezoneOffset);
   // }
-  constructor(date?: Date, timezone: TimeZone = TimeZone.UTC) {
-    this.date = date ? new Date(date) : new Date();
-    this.initialTimezoneOffset = timezone; // Store the initial timezone offset in minutes
-    this.date.setMilliseconds(
-      this.date.getMilliseconds() + this.initialTimezoneOffset
-    );
+
+  constructor(props?: initializeProps) {
+    this.date = props?.date ? new Date(props.date) : new Date();
+    this.initialTimezoneOffset = props?.timezone ? props.timezone * 60000 : 0; // Store the initial timezone offset in milliseconds
+    this.date.setTime(this.date.getTime() + this.initialTimezoneOffset);
   }
+
   format(formatString: string): string {
     // Implement your own date formatting logic or use a library like moment.js/dayjs
     const year = this.date.getFullYear();
@@ -42,44 +40,48 @@ export class DateHelper {
   }
 
   startOf(props: StartOfProp) {
+    const newDate = new Date(this.date.getTime()); // Create a new date instance to avoid mutating the original date
+
     switch (props.unit) {
       case "year":
-        this.date.setMonth(0);
+        newDate.setMonth(0);
       // Falls through intentionally
       case "month":
-        this.date.setDate(1);
+        newDate.setDate(1);
       // Falls through intentionally
       case "day":
-        this.date.setHours(0, 0, 0, 0);
+        newDate.setHours(0, 0, 0, 0);
         break;
       default:
         throw new Error(`Unsupported unit: ${props.unit}`);
     }
 
     if (props.as) {
-      this.date.setMilliseconds(this.date.getMilliseconds() + props.as);
+      newDate.setMilliseconds(newDate.getMilliseconds() + props.as);
     }
 
-    return this; // Return a new Date instance to avoid mutating internal state
+    return new DateHelper({
+      date: newDate,
+      timezone: this.initialTimezoneOffset / 60000,
+    }); // Return a new DateHelper instance
   }
 
   getCurrent(props?: getCurrentProp) {
-    console.log(this.date);
     const offset =
       props?.timezone !== undefined
-        ? props.timezone
+        ? props.timezone * 60000
         : this.initialTimezoneOffset;
-    console.log(offset);
     const newDate = new Date(this.date.getTime());
-    newDate.setMilliseconds(
-      newDate.getMilliseconds() + offset - this.initialTimezoneOffset
-    );
-    // console.log("inside ", newDate);
-    this.date = newDate;
-    return this;
+    const offsetDifference = offset - this.initialTimezoneOffset; // Calculate the offset difference in milliseconds
+    newDate.setTime(newDate.getTime() + offsetDifference);
+
+    return new DateHelper({
+      date: newDate,
+      timezone: this.initialTimezoneOffset / 60000,
+    }); // Return a new DateHelper instance
   }
 
   toDate(): Date {
-    return this.date; // Return the JavaScript Date object
+    return new Date(this.date.getTime()); // Return a copy of the internal date to avoid external mutation
   }
 }
