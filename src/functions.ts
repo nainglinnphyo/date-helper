@@ -10,15 +10,9 @@ export class DateHelper {
   private date: Date;
   private initialTimezoneOffset: number;
 
-  // constructor(date?: Date, timezone: TimeZone = TimeZone.UTC) {
-  //   this.date = date ? new Date(date) : new Date();
-  //   this.initialTimezoneOffset = timezone * 60000; // Store the initial timezone offset in milliseconds
-  //   this.date.setTime(this.date.getTime() + this.initialTimezoneOffset);
-  // }
-
   constructor(props?: initializeProps) {
     this.date = props?.date ? new Date(props.date) : new Date();
-    this.initialTimezoneOffset = props?.timezone ? props.timezone * 60000 : 0; // Store the initial timezone offset in milliseconds
+    this.initialTimezoneOffset = props?.timezone ? props.timezone : 0; // Store the initial timezone offset in milliseconds
     this.date.setTime(this.date.getTime() + this.initialTimezoneOffset);
   }
 
@@ -62,22 +56,21 @@ export class DateHelper {
 
     return new DateHelper({
       date: newDate,
-      timezone: this.initialTimezoneOffset / 60000,
+      timezone: this.initialTimezoneOffset,
     }); // Return a new DateHelper instance
   }
 
   getCurrent(props?: getCurrentProp) {
     const offset =
       props?.timezone !== undefined
-        ? props.timezone * 60000
+        ? props.timezone
         : this.initialTimezoneOffset;
     const newDate = new Date(this.date.getTime());
     const offsetDifference = offset - this.initialTimezoneOffset; // Calculate the offset difference in milliseconds
     newDate.setTime(newDate.getTime() + offsetDifference);
-
     return new DateHelper({
       date: newDate,
-      timezone: this.initialTimezoneOffset / 60000,
+      timezone: this.initialTimezoneOffset,
     }); // Return a new DateHelper instance
   }
 
