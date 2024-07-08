@@ -1,10 +1,21 @@
 export type Unit = "day" | "month" | "year";
 export enum TimeZone {
-  MY = 63000000,
-  TH = 6,
+  MY = 23400000,
+  TH = 25200000,
+  NY = -14400000,
+  UTC = 0,
 }
 
 export type StartOfProp = {
   unit: Unit;
-  as: TimeZone;
+  as?: TimeZone;
+};
+
+export type getCurrentProp = {
+  timezone?: TimeZone;
+};
+
+export type initializeProps = {
+  date?: Date;
+  timezone?: TimeZone;
 };
